@@ -22,7 +22,7 @@
 <div class="warn"><b>Periksa dulu:</b> pesan di bawah harus SAMA PERSIS dengan teks yang agen kirim di chat — hanya pernyataan verifikasi + kode acak. Bila ada jumlah uang, alamat kontrak, atau bahasa transfer/approval: <b>jangan tanda tangani</b>, tutup halaman ini dan kabari agen.</div>
 <p><label for="msg"><b>Pesan dari Synmerco:</b></label><br>
 <textarea id="msg" rows="6" placeholder="Pesan muncul otomatis dari link. Bila kosong, tempel teks pesan dari agen di sini."></textarea></p>
-<p>Wallet yang harus menandatangani:<br><code>0x2aA326be7ADB3692d26C74b09C0412e1B78477bC</code></p>
+<p>Wallet yang harus menandatangani:<br><code>0x62A459Eee61c230Fa4383a84Dfa42f4249D28D76</code></p>
 <p><button id="sign">Hubungkan wallet &amp; tanda tangani</button></p>
 <p id="status"></p>
 <p><label for="sig"><b>Tanda tangan — salin dan kirim ke agen:</b></label><br>
@@ -30,7 +30,7 @@
 <p><button id="copy">Salin tanda tangan</button></p>
 <script>
 (function () {
-  var EXPECTED = '0x2aa326be7adb3692d26c74b09c0412e1b78477bc';
+  var EXPECTED = '0x62a459eee61c230fa4383a84dfa42f4249d28d76';
   var msgEl = document.getElementById('msg');
   var sigEl = document.getElementById('sig');
   var statusEl = document.getElementById('status');
@@ -53,7 +53,7 @@
       var accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
       var addr = (accounts[0] || '').toLowerCase();
       if (addr !== EXPECTED) {
-        statusEl.textContent = 'Alamat terhubung (' + accounts[0] + ') BUKAN wallet Agentic yang diharapkan. Ganti akun ke wallet Agentic lalu coba lagi.';
+        statusEl.textContent = 'Alamat terhubung (' + accounts[0] + ') BUKAN wallet Web3 yang diharapkan. Ganti akun ke wallet Web3 lalu coba lagi.';
         return;
       }
       // personal_sign: params [pesan, alamat]. Pesan dikirim sebagai teks agar bisa dibaca di prompt wallet.
