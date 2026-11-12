@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<!-- DRAF — BELUM DIREVIEW, BELUM DITERBITKAN. Jangan dipakai sebelum agen utama mereview dan Zul menyetujui.
+     Halaman sign-only untuk onboarding Synmerco: TIDAK ada panggilan jaringan, TIDAK ada script eksternal,
+     hanya personal_sign via provider wallet yang di-inject browser (Binance Wallet in-app browser).
+     Pesan dibaca dari hash URL: #m=<pesan, URL-encoded>. Signature ditampilkan untuk disalin manual. -->
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tanda tangan verifikasi Synmerco (draf)</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 1.2em; line-height: 1.5; }
+  textarea { width: 100%; box-sizing: border-box; }
+  button { padding: 0.7em 1.2em; font-size: 1em; margin: 0.4em 0; }
+  code { word-break: break-all; }
+  .warn { background: #fff8e1; border: 1px solid #e6c200; padding: 0.6em; }
+</style>
+</head>
+<body>
+<h1>Tanda tangan verifikasi Synmerco</h1>
+<p>Halaman ini <b>hanya</b> meminta tanda tangan pesan verifikasi kepemilikan wallet. Tidak ada dana yang bergerak, tidak ada transaksi, tidak ada approval.</p>
+<div class="warn"><b>Periksa dulu:</b> pesan di bawah harus SAMA PERSIS dengan teks yang agen kirim di chat — hanya pernyataan verifikasi + kode acak. Bila ada jumlah uang, alamat kontrak, atau bahasa transfer/approval: <b>jangan tanda tangani</b>, tutup halaman ini dan kabari agen.</div>
+<p><label for="msg"><b>Pesan dari Synmerco:</b></label><br>
+<textarea id="msg" rows="6" placeholder="Pesan muncul otomatis dari link. Bila kosong, tempel teks pesan dari agen di sini."></textarea></p>
+<p>Wallet yang harus menandatangani:<br><code>0x2aA326be7ADB3692d26C74b09C0412e1B78477bC</code></p>
+<p><button id="sign">Hubungkan wallet &amp; tanda tangani</button></p>
+<p id="status"></p>
+<p><label for="sig"><b>Tanda tangan — salin dan kirim ke agen:</b></label><br>
+<textarea id="sig" rows="3" readonly placeholder="Tanda tangan muncul di sini setelah berhasil."></textarea></p>
+<p><button id="copy">Salin tanda tangan</button></p>
+<script>
+(function () {
+  var EXPECTED = '0x2aa326be7adb3692d26c74b09c0412e1b78477bc';
+  var msgEl = document.getElementById('msg');
+  var sigEl = document.getElementById('sig');
+  var statusEl = document.getElementById('status');
+
+  // Baca pesan dari hash URL: #m=<pesan URL-encoded>. Hash tidak terkirim ke server.
+  try {
+    var params = new URLSearchParams(location.hash.replace(/^#/, ''));
+    var m = params.get('m');
+    if (m) { msgEl.value = decodeURIComponent(m); }
+  } catch (e) { /* abaikan; pengguna bisa menempel manual */ }
+
+  document.getElementById('sign').onclick = async function () {
+    var msg = msgEl.value.trim();
+    if (!msg) { statusEl.textContent = 'Pesan kosong. Tempel teks pesan dari agen dulu.'; return; }
+    if (!window.ethereum) {
+      statusEl.textContent = 'Wallet tidak terdeteksi. Buka halaman ini dari browser di dalam aplikasi Binance Wallet.';
+      return;
+    }
+    try {
+      var accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      var addr = (accounts[0] || '').toLowerCase();
+      if (addr !== EXPECTED) {
+        statusEl.textContent = 'Alamat terhubung (' + accounts[0] + ') BUKAN wallet Agentic yang diharapkan. Ganti akun ke wallet Agentic lalu coba lagi.';
+        return;
+      }
+      // personal_sign: params [pesan, alamat]. Pesan dikirim sebagai teks agar bisa dibaca di prompt wallet.
+      var sig = await window.ethereum.request({ method: 'personal_sign', params: [msg, accounts[0]] });
+      sigEl.value = sig;
+      statusEl.textContent = 'Berhasil. Salin tanda tangan di bawah dan kirim ke agen. Tanda tangan ini hanya berlaku 10 menit dan hanya untuk pesan ini.';
+    } catch (err) {
+      statusEl.textContent = 'Gagal atau dibatalkan: ' + (err && err.message ? err.message : err);
+    }
+  };
+
+  document.getElementById('copy').onclick = function () {
+    if (!sigEl.value) { statusEl.textContent = 'Belum ada tanda tangan untuk disalin.'; return; }
+    sigEl.select();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(sigEl.value);
+    } else {
+      document.execCommand('copy');
+    }
+    statusEl.textContent = 'Tersalin. Tempel ke chat agen.';
+  };
+})();
+</script>
+</body>
+</html>
